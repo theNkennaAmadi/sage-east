@@ -136,7 +136,6 @@ class TextAnimator {
   }
 
   animateText(delay) {
-    console.log(this.dataText.length);
     if (this.dataText.length !== 0) {
       this.dataText.forEach((title) => {
         if (!title.hasAttribute("no-instance")) {
@@ -166,6 +165,166 @@ class TextAnimator {
   }
 }
 
+class GalleryScroller {
+  constructor(container) {
+    this.iteration = 0;
+
+    this.spacing = 0.15; // spacing of the cards (stagger)
+    this.snapTime = gsap.utils.snap(this.spacing); // we'll use this to snapTime the playhead on the seamlessLoop
+    this.cards = [...container.querySelectorAll(".works-list-item")];
+    this.cardsList = container.querySelector(".works-list");
+    this.cardsListWrapper = container.querySelector(".works-list-wrapper");
+    this.dragWrapper = container.querySelector(".drag-proxy");
+    this.seamlessLoop = this.buildSeamlessLoop(
+      this.cards,
+      this.spacing,
+      this.animateFunc.bind(this)
+    );
+    this.playhead = { offset: 0 }; // a proxy object we use to simulate the playhead position
+
+    // Set initial state of items
+    gsap.set(this.cards, { xPercent: 400, opacity: 0, scale: 0 });
+
+    this.scrub = gsap.to(this.playhead, {
+      offset: 0,
+      onUpdate: this.onScrubUpdate.bind(this),
+      duration: 0.5,
+      ease: "power3",
+      paused: true,
+    });
+
+    this.trigger = ScrollTrigger.create({
+      start: 0,
+      onUpdate: this.onScrollUpdate.bind(this),
+      end: "+=3000",
+      pin: this.cardsListWrapper,
+    });
+
+    ScrollTrigger.addEventListener("scrollEnd", () =>
+      this.scrollToOffset(this.scrub.vars.offset)
+    );
+
+    Draggable.create(this.dragWrapper, {
+      type: "x",
+      trigger: this.cardsList,
+      onPress: this.onPress.bind(this),
+      onDrag: this.onDrag.bind(this),
+      onDragEnd: () => this.scrollToOffset(this.scrub.vars.offset),
+    });
+  }
+
+  animateFunc(element) {
+    const tl = gsap.timeline();
+    tl.fromTo(
+      element,
+      { scale: 0, opacity: 0 },
+      {
+        scale: 1,
+        opacity: 1,
+        zIndex: 100,
+        duration: 0.5,
+        yoyo: true,
+        repeat: 1,
+        ease: "power1.in",
+        immediateRender: false,
+      }
+    ).fromTo(
+      element,
+      { xPercent: 400 },
+      { xPercent: -400, duration: 1, ease: "none", immediateRender: false },
+      0
+    );
+    return tl;
+  }
+
+  buildSeamlessLoop(items, spacing, animateFunc) {
+    let rawSequence = gsap.timeline({ paused: true }),
+      seamlessLoop = gsap.timeline({
+        paused: true,
+        repeat: -1,
+        onRepeat: () => {
+          this._time === this._dur && (this._tTime += this._dur - 0.01);
+        },
+        onReverseComplete: () => {
+          this.totalTime(this.rawTime() + this.duration() * 100);
+        },
+      }),
+      cycleDuration = spacing * items.length,
+      dur;
+
+    items
+      .concat(items)
+      .concat(items)
+      .forEach((item, i) => {
+        let anim = animateFunc(items[i % items.length]);
+        rawSequence.add(anim, i * spacing);
+        dur || (dur = anim.duration());
+      });
+
+    seamlessLoop.fromTo(
+      rawSequence,
+      { time: cycleDuration + dur / 2 },
+      { time: "+=" + cycleDuration, duration: cycleDuration, ease: "none" }
+    );
+    return seamlessLoop;
+  }
+
+  onScrubUpdate() {
+    const wrapTime = gsap.utils.wrap(0, this.seamlessLoop.duration());
+    this.seamlessLoop.time(wrapTime(this.playhead.offset));
+  }
+
+  onScrollUpdate(self) {
+    const scroll = self.scroll();
+    if (scroll > self.end - 1) {
+      this.wrap(1, 2);
+    } else if (scroll < 1 && self.direction < 0) {
+      this.wrap(-1, self.end - 2);
+    } else {
+      this.scrub.vars.offset =
+        (this.iteration + self.progress) * this.seamlessLoop.duration();
+      this.scrub.invalidate().restart();
+    }
+  }
+
+  scrollToOffset(offset) {
+    const snappedTime = this.snapTime(offset);
+    const progress =
+      (snappedTime - this.seamlessLoop.duration() * this.iteration) /
+      this.seamlessLoop.duration();
+    const scroll = this.progressToScroll(progress);
+
+    if (progress >= 1 || progress < 0) {
+      this.wrap(Math.floor(progress), scroll);
+      return;
+    }
+
+    this.trigger.scroll(scroll);
+  }
+
+  progressToScroll(progress) {
+    return gsap.utils.clamp(
+      1,
+      this.trigger.end - 1,
+      gsap.utils.wrap(0, 1, progress) * this.trigger.end
+    );
+  }
+
+  wrap(iterationDelta, scrollTo) {
+    this.iteration += iterationDelta;
+    this.trigger.scroll(scrollTo);
+    this.trigger.update();
+  }
+
+  onPress() {
+    this.startOffset = this.scrub.vars.offset;
+  }
+
+  onDrag() {
+    this.scrub.vars.offset = this.startOffset + (this.startX - this.x) * 0.001;
+    this.scrub.invalidate().restart();
+  }
+}
 function gallery() {
   let iteration = 0; // gets iterated when we scroll all the way to the end or start and wraps around - allows us to smoothly continue the playhead scrubbing in the correct direction.
 
@@ -446,6 +605,8 @@ barba.hooks.enter((data) => {
     history.scrollRestoration = "manual";
   }
 });
+
+let run = true;
 
 barba.init({
   preventRunning: true,
