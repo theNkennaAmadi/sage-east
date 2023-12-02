@@ -138,7 +138,10 @@ class TextAnimator {
   animateText(delay) {
     if (this.dataText.length !== 0) {
       this.dataText.forEach((title) => {
-        if (!title.hasAttribute("no-instance")) {
+        if (
+          !title.hasAttribute("no-instance") &&
+          title["🍌"].lines.length > 0
+        ) {
           const chars = title.querySelectorAll(".word");
           gsap.fromTo(
             chars,
@@ -174,6 +177,7 @@ class GalleryScroller {
     this.cards = [...container.querySelectorAll(".works-list-item")];
     this.cardsList = container.querySelector(".works-list");
     this.cardsListWrapper = container.querySelector(".works-list-wrapper");
+    this.sectionWrapper = container.querySelector("[visibility-hidden]");
     this.dragWrapper = container.querySelector(".drag-proxy");
     this.seamlessLoop = this.buildSeamlessLoop(
       this.cards,
@@ -183,7 +187,12 @@ class GalleryScroller {
     this.playhead = { offset: 0 }; // a proxy object we use to simulate the playhead position
 
     // Set initial state of items
-    gsap.set(this.cards, { xPercent: 400, opacity: 0, scale: 0 });
+    gsap.set(this.cards, { x: "400%", opacity: 0, scale: 0 });
+    gsap.from(this.sectionWrapper, {
+      autoAlpha: 0,
+      duration: 1,
+      ease: "expo",
+    });
 
     this.scrub = gsap.to(this.playhead, {
       offset: 0,
@@ -230,8 +239,8 @@ class GalleryScroller {
       }
     ).fromTo(
       element,
-      { xPercent: 400 },
-      { xPercent: -400, duration: 1, ease: "none", immediateRender: false },
+      { x: "400%" },
+      { x: "-400%", duration: 1, ease: "none", immediateRender: false },
       0
     );
     return tl;
@@ -266,6 +275,7 @@ class GalleryScroller {
       { time: cycleDuration + dur / 2 },
       { time: "+=" + cycleDuration, duration: cycleDuration, ease: "none" }
     );
+    console.log(seamlessLoop);
     return seamlessLoop;
   }
 
@@ -330,6 +340,11 @@ function gallery() {
 
   // set initial state of items
   gsap.set(".works-list-item", { xPercent: 400, opacity: 0, scale: 0 });
+  gsap.from("[visibility-hidden]", {
+    autoAlpha: 0,
+    duration: 1,
+    ease: "expo",
+  });
 
   const spacing = 0.15, // spacing of the cards (stagger)
     snapTime = gsap.utils.snap(spacing), // we'll use this to snapTime the playhead on the seamlessLoop
@@ -409,6 +424,7 @@ function gallery() {
   // feed in an offset (like a time on the seamlessLoop timeline, but it can exceed 0 and duration() in either direction; it'll wrap) and it'll set the scroll position accordingly. That'll call the onUpdate() on the trigger if there's a change.
   function scrollToOffset(offset) {
     // moves the scroll playhead to the place that corresponds to the totalTime value of the seamlessLoop, and wraps if necessary.
+
     let snappedTime = snapTime(offset),
       progress =
         (snappedTime - seamlessLoop.duration() * iteration) /
@@ -462,7 +478,7 @@ function gallery() {
     return seamlessLoop;
   }
 
-  // below is the dragging functionality (mobile-friendly too)...
+  //dragging functionality (mobile-friendly too)...
   Draggable.create(".drag-proxy", {
     type: "x",
     trigger: ".works-list",
@@ -523,17 +539,9 @@ class SectionNavigator {
 
     if (this.currentIndex >= 0) {
       gsap.to(this.sections[this.currentIndex], { zIndex: 0, opacity: 0 });
-      gsap.to(this.thumbnails[this.currentIndex].querySelector("img"), {
-        filter: "saturate(0%)",
-      });
     }
 
     tl.to(this.sections[index], { autoAlpha: 1, zIndex: 1 });
-    tl.to(
-      this.thumbnails[index].querySelector("img"),
-      { filter: "saturate(100%)" },
-      "<"
-    );
 
     this.mm.add("(min-width: 768px)", () => {
       tl.to(
@@ -642,7 +650,8 @@ barba.init({
       namespace: "work-category",
       beforeEnter(data) {
         let nextContainer = data.next.container;
-        gallery();
+        new GalleryScroller(nextContainer);
+        //gallery();
         new Nav(nextContainer);
       },
     },
