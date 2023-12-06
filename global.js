@@ -1,4 +1,4 @@
-gsap.registerPlugin(ScrollTrigger, Draggable);
+gsap.registerPlugin(ScrollTrigger, Draggable, Flip);
 
 class Nav {
   constructor(container) {
@@ -165,6 +165,172 @@ class TextAnimator {
   init() {
     this.wrapWords();
     this.animateText(this.delay);
+  }
+}
+
+class IntroAnimator {
+  constructor(container, delay = 0) {
+    this.words = [
+      ...container
+        .querySelector(".hero-intro-container")
+        .querySelectorAll(".word"),
+    ];
+    this.dataText = [
+      ...container
+        .querySelector(".hero-intro-container")
+        .querySelectorAll("[data-splitting]"),
+    ];
+    this.delay = delay;
+    this.init();
+  }
+
+  wrapWords() {
+    gsap.set(this.words, { opacity: 0, yPercent: -120 });
+    this.words.forEach((word) => {
+      let wrapper = document.createElement("span");
+      wrapper.classList.add("char-wrap");
+      word.parentNode.insertBefore(wrapper, word);
+      wrapper.appendChild(word);
+    });
+  }
+
+  animateText(delay) {
+    if (this.dataText.length !== 0) {
+      this.dataText.forEach((title) => {
+        if (title["🍌"].words.length > 0) {
+          const chars = title.querySelectorAll(".word");
+          gsap.fromTo(
+            chars,
+            {
+              "will-change": "transform",
+              transformOrigin: "0% 50%",
+              opacity: 0,
+              yPercent: -120,
+            },
+            {
+              duration: 3,
+              ease: "expo",
+              opacity: 1,
+              yPercent: 0,
+              delay: delay,
+            }
+          );
+        }
+      });
+    }
+  }
+
+  init() {
+    this.wrapWords();
+    //this.animateText(this.delay);
+  }
+}
+
+class LoaderAnimator {
+  constructor(nextContainer, introA) {
+    this.workImages = [...nextContainer.querySelectorAll(".works-intro-item")];
+    this.flipContainers = [...nextContainer.querySelectorAll(".hero-c")];
+    this.finalContainers = [
+      ...nextContainer.querySelectorAll("[data-hero-visual]"),
+    ];
+    this.excludedIndices = [1, 6, 10];
+    this.introAnimation = introA;
+    this.selectedItems = this.workImages.filter((item) => {
+      const flipId = parseInt(item.getAttribute("data-flip-id"));
+      return !this.excludedIndices.includes(flipId);
+    });
+    this.mainItems = this.workImages.filter((item) => {
+      const flipId = parseInt(item.getAttribute("data-flip-id"));
+      return this.excludedIndices.includes(flipId);
+    });
+
+    this.items = this.mainItems.map((item) => {
+      return item.querySelector("img");
+    });
+
+    this.state = Flip.getState(this.workImages);
+    this.flipContainers.forEach((container, index) => {
+      container.append(
+        this.workImages[this.flipContainers.length - (index + 1)]
+      );
+    });
+
+    this.loaderTimeline = gsap.timeline().add(() => {
+      Flip.from(this.state, {
+        duration: 1,
+        opacity: 1,
+        //absolute: true,
+        zIndex: -1,
+        stagger: 0.1,
+        ease: "expo.out",
+      })
+        .fromTo(
+          this.selectedItems,
+          { opacity: 1, duration: 1, ease: "expo.out" },
+          {
+            opacity: 0,
+            duration: 1,
+            stagger: {
+              amount: 1,
+            },
+            ease: "expo.out",
+          },
+          ">0.2"
+        )
+        .to(".loading-text", { opacity: 0, duration: 1, ease: "expo.out" }, "<")
+        .eventCallback("onComplete", () => {
+          // Run your function here
+          this.introAnimation.animateText();
+          this.state = Flip.getState(this.items);
+          this.state2 = Flip.getState(this.finalContainers);
+          setTimeout(() => {
+            this.finalContainers.forEach((container, index) => {
+              //container.append(this.items[index]);
+
+              const flipId = parseInt(container.getAttribute("data-flip-id"));
+              console.log(flipId);
+              let mainItem = this.mainItems.filter(
+                (item) => parseInt(item.getAttribute("data-flip-id")) === flipId
+              );
+              console.log(mainItem);
+              container.append(mainItem[0].querySelector("img"));
+
+              /*
+              Flip.fit(this.mainItems[index].querySelector("img"), container, {
+                duration: 2,
+                //scale: true,
+                ease: "power2.in",
+              });
+
+               */
+            });
+
+            Flip.from(this.state, {
+              duration: 1,
+              //absolute: true,
+              //scale: true,
+              zIndex: -1,
+              ease: "power4.out",
+            });
+          }, 500);
+        });
+    });
+
+    this.formatNumber = (value, decimals) => {
+      let s = (+value).toLocaleString("en-US").split(".");
+      return decimals
+        ? s[0] + "." + ((s[1] || "") + "00000000").substr(0, decimals)
+        : s[0];
+    };
+
+    gsap.to("#loaderPercentage", {
+      textContent: "100",
+      duration: 3,
+      ease: "power1.inOut",
+      modifiers: {
+        textContent: (value) => this.formatNumber(value, 0) + "%",
+      },
+    });
   }
 }
 
@@ -457,6 +623,8 @@ class SectionNavigator {
   }
 }
 
+homeAnim = () => {};
+
 barba.hooks.beforeLeave((data) => {
   Observer.getAll().forEach((o) => o.kill());
   ScrollTrigger.getAll().forEach((t) => t.kill());
@@ -474,6 +642,9 @@ barba.init({
       beforeEnter(data) {
         let nextContainer = data.next.container;
         new Nav(nextContainer);
+        //homeAnim();
+        let introA = new IntroAnimator(nextContainer);
+        new LoaderAnimator(nextContainer, introA);
       },
     },
     {
