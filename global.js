@@ -118,15 +118,19 @@ class RevealAnimator {
 }
 
 class TextAnimator {
-  constructor(container, delay = 0) {
+  constructor(container, delay = 0, y = -120, duration = 3, active = true) {
     this.words = [...container.querySelectorAll(".word")];
     this.dataText = [...container.querySelectorAll("[data-splitting]")];
     this.delay = delay;
+    this.duration = duration;
+    this.y = y;
+    this.active = active;
+    this.timeline = null;
     this.init();
   }
 
-  wrapWords() {
-    gsap.set(this.words, { yPercent: -120 });
+  wrapWords(y) {
+    gsap.set(this.words, { yPercent: y });
     this.words.forEach((word) => {
       let wrapper = document.createElement("span");
       wrapper.classList.add("char-wrap");
@@ -135,7 +139,7 @@ class TextAnimator {
     });
   }
 
-  animateText(delay) {
+  animateText(delay, y, duration, endY = 0) {
     if (this.dataText.length !== 0) {
       this.dataText.forEach((title) => {
         if (
@@ -143,17 +147,18 @@ class TextAnimator {
           title["🍌"].lines.length > 0
         ) {
           const chars = title.querySelectorAll(".word");
-          gsap.fromTo(
+          this.timeline = gsap.timeline();
+          this.timeline.fromTo(
             chars,
             {
               "will-change": "transform",
               transformOrigin: "0% 50%",
-              yPercent: -120,
+              yPercent: y,
             },
             {
-              duration: 3,
+              duration: duration,
               ease: "expo",
-              yPercent: 0,
+              yPercent: endY,
               delay: delay,
             }
           );
@@ -163,8 +168,10 @@ class TextAnimator {
   }
 
   init() {
-    this.wrapWords();
-    this.animateText(this.delay);
+    this.wrapWords(this.y);
+    if (this.active) {
+      this.animateText(this.delay, this.y, this.duration);
+    }
   }
 }
 
@@ -288,11 +295,11 @@ class LoaderAnimator {
               //container.append(this.items[index]);
 
               const flipId = parseInt(container.getAttribute("data-flip-id"));
-              console.log(flipId);
+              //console.log(flipId);
               let mainItem = this.mainItems.filter(
                 (item) => parseInt(item.getAttribute("data-flip-id")) === flipId
               );
-              console.log(mainItem);
+              //console.log(mainItem);
               container.append(mainItem[0].querySelector("img"));
 
               /*
@@ -311,6 +318,9 @@ class LoaderAnimator {
               //scale: true,
               zIndex: -1,
               ease: "power4.out",
+              onComplete: () => {
+                //  lenis.start();
+              },
             });
           }, 500);
         });
@@ -333,6 +343,8 @@ class LoaderAnimator {
     });
   }
 }
+
+let gallerySnap = null;
 
 class GalleryScroller {
   constructor(container) {
@@ -357,6 +369,8 @@ class GalleryScroller {
       this.animateFunc.bind(this)
     );
     this.playhead = { offset: 0 };
+    this.scroll = null;
+    gallerySnap = () => this.scrollToOffset(this.scrub.vars.offset);
   }
 
   setupScrollTrigger() {
@@ -367,9 +381,7 @@ class GalleryScroller {
       pin: this.cardsListWrapper,
     });
 
-    ScrollTrigger.addEventListener("scrollEnd", () =>
-      this.scrollToOffset(this.scrub.vars.offset)
-    );
+    ScrollTrigger.addEventListener("scrollEnd", gallerySnap);
   }
 
   setupDraggable() {
@@ -477,14 +489,15 @@ class GalleryScroller {
     const progress =
       (snappedTime - this.seamlessLoop.duration() * this.iteration) /
       this.seamlessLoop.duration();
-    const scroll = this.progressToScroll(progress);
+    this.scroll = this.progressToScroll(progress);
+    console.log(this.scroll);
 
     if (progress >= 1 || progress < 0) {
-      this.wrap(Math.floor(progress), scroll);
+      this.wrap(Math.floor(progress), this.scroll);
       return;
     }
 
-    this.trigger.scroll(scroll);
+    this.trigger.scroll(this.scroll);
   }
 
   progressToScroll(progress) {
@@ -623,16 +636,386 @@ class SectionNavigator {
   }
 }
 
-homeAnim = () => {};
+class HomeAnimation {
+  constructor(container, textAnim) {
+    this.container = container;
+    this.textAnim = textAnim;
+    this.grid = container.querySelector(".grid");
+    this.gridWrap = this.grid.querySelector(".grid-wrap");
+    this.gridItems = [...this.grid.querySelectorAll(".grid__item")];
+    this.gridItemsInner = this.gridItems.map((item) =>
+      item.querySelector(".grid__item-inner")
+    );
+    this.visualLoader = container.querySelector(".hero-visual-loader");
+    this.workItems = [...container.querySelectorAll(".home-works-item")];
+    this.workItemsOdd = [
+      ...container.querySelectorAll(".home-works-item:nth-of-type(odd)"),
+    ];
+    this.workItemsEven = [
+      ...container.querySelectorAll(".home-works-item:nth-of-type(even)"),
+    ];
+    this.bgItems = [...container.querySelectorAll(".home-bg-work-item")];
+    this.bgListContainer = container.querySelector(".home-bg-works");
+    this.homeIntro = container.querySelector(".section.home-works-intro");
+    this.homeWorksContainer = container.querySelector("#home-works");
+    this.viewSwitch = container.querySelector(".view-switch");
+    this.homeWorksWrapper = container.querySelector(".home-works-wrapper");
+    this.z1 = [
+      -2280.66439, -4090.43074, -3814.42043, -3526.10922, -3438.33831,
+      -3977.22769, -2947.32029, -4917.0747, -2814.31399, -3264.86641,
+      -2076.61897, -2822.42077, -4368.84388, -3575.85789, -4060.62386,
+      -2997.28304, -3726.35285, -3119.24528, -4861.90888, -4942.12413,
+      -2105.98518, -3063.85445, -3234.32121, -2448.31374, -4909.65988,
+      -2673.39894, -2931.29392, -2609.19342, -4997.74786, -3815.48084,
+    ];
+    this.rotationX1 = [
+      -46.88217, -30.32588, -28.24739, -45.87395, -64.4923, -41.22551,
+      -56.70349, -40.52322, -28.44805, -57.75579, -31.12526, -36.47417,
+      -33.61298, -27.84889, -52.21894, -53.44592, -52.7875, -60.55159,
+      -50.84154, -43.58872, -41.84512, -34.50578, -51.32885, -53.09134,
+      -59.61798, -36.72126, -43.09396, -63.48053, -50.89954, -47.45038,
+    ];
+    this.x1 = [
+      31.34786, 33.75912, 78.84946, -116.37192, 46.40541, 88.96467, -74.66323,
+      -46.83478, -70.30599, 81.86534, -16.7544, 62.39884, 88.75294, 91.24341,
+      -47.76371, -57.57659, -94.61628, 19.8771, -12.55576, 145.99257, -58.57768,
+      -1.82074, 97.72864, 94.68089, 120.50039, -1.19648, 145.40075, 52.93923,
+      -70.35703, -45.39887,
+    ];
+    this.y1 = [
+      13.10453, 291.57995, -286.78769, 194.36089, -296.30615, -103.70483,
+      284.80738, -49.27964, 225.80777, -13.89143, 224.39513, -15.50033,
+      37.30396, -139.84827, -282.30682, 55.85223, 34.37649, 111.7255, 273.34913,
+      -243.09868, 151.2216, 250.80852, -107.12769, -231.67495, 46.84137,
+      -277.76839, 265.60389, 155.55756, 205.66728, -65.64371,
+    ];
+    this.targetZValue = 1;
+    this.closestItem = null;
+    this.closestZDifference = Infinity;
+    this.currIndex = 0;
+    this.newIndex = 0;
+    this.numItems = this.workItems.length;
+    this.progress = 0;
+    this.tl1 = null;
+    this.tlList = null;
+    this.viewBtns = container.querySelectorAll(".view-link");
+    this.view = "grid-view";
+    this.gridScroll = null;
+    this.listViewWrapper = this.container.querySelector(
+      ".home-list-view-wrapper"
+    );
+    this.listViewContainer = this.container.querySelector(
+      ".home-list-view-list"
+    );
+    this.listViewItems = [
+      ...this.container.querySelectorAll(".home-list-view-item"),
+    ];
+    this.textMask = container.querySelector(".text-mask");
+
+    this.setUpStyles();
+    this.setUpListeners();
+    this.createScrollTriggers();
+    this.createTimelines();
+    this.init();
+  }
+
+  init() {
+    gsap.set(this.visualLoader, { opacity: 1 });
+    //firstLoad ? lenis.stop() : lenis.start();
+    firstLoad = false;
+
+    //Initialize the z position of the grid items for scroll
+    gsap.set(this.workItems, {
+      z: (i) => {
+        return (i + 1) * -1800;
+      },
+      zIndex: (i) => {
+        return i * -1;
+      },
+      opacity: 0,
+    });
+    console.log(this.progress);
+    this.tl1.progress(this.progress / 100);
+    this.getP();
+  }
+
+  setUpListeners() {
+    this.viewBtns.forEach((btn) => {
+      btn.addEventListener("click", () => {
+        this.view = btn.getAttribute("data-view");
+        this.viewBtns.forEach((btn) => {
+          btn.classList.remove("current");
+        });
+        btn.classList.add("current");
+        this.switchViews(this.view);
+        /*
+        switch (this.view) {
+          case "grid-view":
+            //this.gridScroll.enable();
+            this.switchViews(this.view);
+            break;
+          case "list-view":
+            //this.gridScroll.disable();
+            this.switchViews(this.view);
+            break;
+          default:
+            break;
+        }
+
+         */
+      });
+    });
+  }
+
+  switchViews(view) {
+    if (view === "list-view") {
+      this.textAnim.animateText(0.5, 120, 2);
+      this.tlList.play();
+    } else {
+      this.textAnim.animateText(0, 0, 1, 120);
+      this.tlList.reverse();
+    }
+  }
+
+  setUpStyles() {
+    // Set some CSS related style values
+    this.grid.style.setProperty("--grid-width", "105%");
+    this.grid.style.setProperty("--grid-columns", "8");
+    this.grid.style.setProperty("--perspective", "1500px");
+    this.grid.style.setProperty("--grid-inner-scale", "0.5");
+  }
+
+  getTotalHeight = (index) => {
+    let height = 0;
+    let mTitles = this.listViewItems.slice(0, index);
+    mTitles.forEach(
+      (el) => (height += el.offsetHeight + window.innerHeight * 0.12)
+    );
+    console.log(height);
+    return height;
+  };
+
+  createScrollTriggers() {
+    // ScrollTrigger for page background toggle
+    ScrollTrigger.create({
+      trigger: this.homeIntro,
+      start: "top 80%",
+      onEnter: () => {
+        this.container.classList.toggle("bg-white");
+      },
+      onLeaveBack: () => {
+        this.container.classList.toggle("bg-white");
+      },
+    });
+
+    this.gridScroll = ScrollTrigger.create({
+      trigger: this.homeWorksContainer,
+      start: "top top",
+      end: () => this.numItems * window.innerHeight,
+      pin: this.homeIntro,
+      scrub: 0.1,
+      immediateRender: false,
+      onUpdate: (self) => {
+        this.progress = self.progress * 100;
+        this.progress = gsap.utils.clamp(0, 98.5, this.progress);
+        this.tl1.progress(this.progress / 100);
+        this.getP();
+      },
+    });
+
+    console.log(this.gridScroll);
+
+    ScrollTrigger.create({
+      trigger: this.container,
+      start: "top top",
+      end: "bottom bottom",
+      onUpdate: (self) => {
+        let scroll = self.progress * 100;
+        this.container.querySelector("#home-scroll-percentage").innerHTML =
+          parseInt(scroll, 10).toString() + "%";
+      },
+    });
+  }
+
+  createTimelines() {
+    // Define GSAP timeline with ScrollTrigger
+    const timeline = gsap.timeline({
+      defaults: { ease: "none" },
+      scrollTrigger: {
+        trigger: this.gridWrap,
+        start: "top bottom+=5%",
+        end: "bottom top-=5%",
+        scrub: true,
+      },
+    });
+
+    // Define animations in the timeline
+    timeline
+      .set(this.gridItems, {
+        transformOrigin: "50% 0%",
+        z: (i) => this.z1[i],
+        rotationX: (i) => this.rotationX1[i],
+        filter: "brightness(0%)",
+      })
+      .to(
+        this.gridItems,
+        {
+          xPercent: (i) => this.x1[i],
+          yPercent: (i) => this.y1[i],
+          rotationX: 0,
+          filter: "brightness(100%)",
+        },
+        0
+      )
+      .to(
+        this.gridWrap,
+        {
+          z: 6500,
+        },
+        0
+      )
+      .fromTo(
+        this.gridItemsInner,
+        {
+          scale: 1.5,
+        },
+        {
+          scale: 0.5,
+        },
+        0
+      );
+
+    // Additional timeline configurations
+    // ...
+    this.tl1 = gsap.timeline({ paused: true });
+
+    this.tl1.to(this.workItems, {
+      z: 1300,
+      duration: (i) => {
+        return (i + 1) * 0.5;
+      },
+      ease: "linear",
+    });
+
+    let tlZoom = gsap.timeline({
+      scrollTrigger: {
+        trigger: this.homeWorksContainer,
+        start: "top 15%",
+        end: "top top",
+        scrub: 1,
+        ease: "linear",
+        onEnter: () => {
+          gsap.to(this.viewSwitch, {
+            opacity: 1,
+            visibility: "visible",
+            duration: 0.3,
+          });
+        },
+        onLeaveBack: () => {
+          gsap.to(this.viewSwitch, {
+            opacity: 0,
+            visibility: "hidden",
+            duration: 0.3,
+          });
+        },
+        // markers: true,
+      },
+    });
+    tlZoom.to(this.homeWorksWrapper, { z: 0 });
+    tlZoom.from(this.homeWorksWrapper, { opacity: 0 }, "0");
+
+    let tlZoom2 = gsap.timeline({
+      scrollTrigger: {
+        trigger: this.homeWorksContainer,
+        start: "top top",
+        scrub: true,
+      },
+    });
+    tlZoom2.to(this.bgListContainer, { opacity: 1 });
+    tlZoom2.from(this.textMask, { opacity: 0 });
+
+    this.tlList = gsap.timeline({
+      paused: true,
+      //onComplete: this.textAnim.animateText(0, 120, 2),
+    });
+    this.tlList.to(this.workItemsOdd, {
+      x: "25vw",
+    });
+    this.tlList.to(this.workItemsEven, { x: "-25vw" }, "<");
+    this.tlList.to(".home-works-name", { opacity: 0 }, "<");
+    this.tlList.to(this.bgListContainer, { filter: "blur(0px)" }, "<");
+    this.tlList.to(this.listViewWrapper, { opacity: 1, zIndex: 3 }, "<");
+    this.tlList.fromTo(
+      this.workItems,
+      {
+        "clip-path": "polygon(0% 0%, 100% 0%, 100% 100%, 0% 100%)",
+      },
+      { "clip-path": "polygon(45% 50%, 55% 50%, 50% 50%, 50% 50%)" }
+    );
+  }
+
+  getP = () => {
+    this.resetClosestItem();
+    this.workItems.forEach((item) => {
+      let z = gsap.utils.normalize(-3000, 0, gsap.getProperty(item, "z"));
+      item.setAttribute("data-z", z);
+      gsap.to(item, { opacity: z + 0.2 });
+      gsap.to(item.querySelector("img"), {
+        scale: z * 0.5 + 0.75,
+        ease: "expo.out",
+        duration: 0.5,
+      });
+      let zDifference = Math.abs(z - this.targetZValue);
+      if (zDifference < this.closestZDifference) {
+        this.closestZDifference = zDifference;
+        this.closestItem = item;
+      }
+    });
+    this.currIndex = this.workItems.indexOf(this.closestItem);
+    if (this.currIndex !== this.newIndex) {
+      gsap.to(this.bgItems[this.newIndex], { opacity: 0, duration: 0.3 });
+      gsap.to(this.listViewItems[this.newIndex], {
+        filter: "blur(4px)",
+        duration: 0.3,
+      });
+      this.newIndex = this.currIndex;
+      gsap.to(this.bgItems[this.newIndex], { opacity: 1, duration: 0.3 });
+      gsap.to(this.listViewItems[this.newIndex], {
+        filter: "blur(0px)",
+        duration: 0.3,
+      });
+      gsap.to(this.listViewContainer, {
+        y: () => -this.getTotalHeight(this.newIndex),
+      });
+    }
+  };
+
+  resetClosestItem = () => {
+    if (this.closestItem) {
+      //closestItem.classList.remove("highlighted");
+    }
+    this.closestItem = null;
+    this.closestZDifference = Infinity;
+  };
+}
 
 barba.hooks.beforeLeave((data) => {
+  gsap.getTweensOf("*").forEach((animation) => {
+    animation.kill();
+  });
+  ScrollTrigger.clearScrollMemory();
+  ScrollTrigger.removeEventListener("scrollEnd", gallerySnap);
   Observer.getAll().forEach((o) => o.kill());
   ScrollTrigger.getAll().forEach((t) => t.kill());
-  //window.scroll(0, 0);
+  console.log(gsap.getTweensOf("*"));
+
+  window.scroll(0, 0);
   if (history.scrollRestoration) {
-    //history.scrollRestoration = "manual";
+    history.scrollRestoration = "manual";
   }
 });
+
+let firstLoad = true;
 
 barba.init({
   preventRunning: true,
@@ -641,10 +1024,29 @@ barba.init({
       namespace: "home",
       beforeEnter(data) {
         let nextContainer = data.next.container;
+        Splitting();
         new Nav(nextContainer);
-        //homeAnim();
         let introA = new IntroAnimator(nextContainer);
-        new LoaderAnimator(nextContainer, introA);
+        if (firstLoad) {
+          new LoaderAnimator(nextContainer, introA);
+        } else {
+          gsap.to(".hero-visual-loader", { opacity: 0 });
+          gsap.to(".hero-visual-img", {
+            opacity: 1,
+            display: "block",
+            duration: 1,
+          });
+          // lenis.start();
+          introA.animateText();
+        }
+        let textAnim = new TextAnimator(
+          nextContainer.querySelector(".home-list-view-wrapper"),
+          0,
+          120,
+          2,
+          false
+        );
+        new HomeAnimation(nextContainer, textAnim);
       },
     },
     {
