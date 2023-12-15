@@ -324,7 +324,7 @@ class LoaderAnimator {
               zIndex: -1,
               ease: "power4.out",
               onComplete: () => {
-                //  lenis.start();
+                lenis.start();
               },
             });
           }, 500);
@@ -725,7 +725,7 @@ class HomeAnimation {
 
   init() {
     gsap.set(this.visualLoader, { opacity: 1 });
-    //firstLoad ? lenis.stop() : lenis.start();
+    firstLoad ? lenis.stop() : lenis.start();
     firstLoad = false;
 
     //Initialize the z position of the grid items for scroll
@@ -1336,7 +1336,7 @@ barba.init({
             display: "block",
             duration: 1,
           });
-          // lenis.start();
+          lenis.start();
           introA.animateText();
         }
         let textAnim = new TextAnimator(
