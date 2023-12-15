@@ -1532,11 +1532,6 @@ barba.init({
       beforeEnter(data) {
         let nextContainer = data.next.container;
         Splitting();
-        gsap.to("[visibility-hidden]", {
-          visibility: "visible",
-          duration: 1,
-          ease: "expo",
-        });
         //new SeamlessLoopAnimator();
         new GalleryScroller(nextContainer);
         new Nav(nextContainer);
