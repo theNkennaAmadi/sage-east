@@ -1,8 +1,25 @@
 gsap.registerPlugin(ScrollTrigger, Draggable, Flip);
 
+/**
+ * Lenis Initialization
+ *
+ */
+const lenis = new Lenis();
+
+lenis.on("scroll", ScrollTrigger.update);
+
+gsap.ticker.add((time) => {
+  lenis.raf(time * 1000);
+});
+
+gsap.ticker.lagSmoothing(0);
+
+/**
+ * Class Initialization
+ */
+
 class Nav {
   constructor(container) {
-    this.nav = container.querySelector(".nav");
     this.worksLink = container.querySelector("[nav-works]");
     this.worksIcon = container.querySelector(".nav-span");
     this.worksDropdown = container.querySelector(".menu-works-dropdown");
@@ -22,29 +39,29 @@ class Nav {
       this.worksIcon,
       { rotation: 0 },
       { rotation: 45, duration: 1, ease: "expo.out" }
-    );
-    tl.fromTo(this.main, { opacity: 1 }, { opacity: 0.3, duration: 0.6 }, "<");
-    tl.fromTo(
-      this.worksDropdown,
-      {
-        clipPath: "polygon(0% 0%, 100% 0%, 100% 0%, 0% 0%)",
-        display: "none",
-      },
-      {
-        clipPath: "polygon(0% 0%, 100% 0%, 100% 100%, 0% 100%)",
-        display: "grid",
-        ease: "expo.inOut",
-        delay: this.delay,
-        duration: 1.5,
-      },
-      "<"
-    );
-    tl.fromTo(
-      this.worksLine,
-      { width: "0%" },
-      { width: "100%", duration: 0.6, ease: "expo.out" },
-      "<0.9"
-    );
+    )
+      .fromTo(this.main, { opacity: 1 }, { opacity: 0.3, duration: 0.6 }, "<")
+      .fromTo(
+        this.worksDropdown,
+        {
+          clipPath: "polygon(0% 0%, 100% 0%, 100% 0%, 0% 0%)",
+          display: "none",
+        },
+        {
+          clipPath: "polygon(0% 0%, 100% 0%, 100% 100%, 0% 100%)",
+          display: "grid",
+          ease: "expo.inOut",
+          delay: this.delay,
+          duration: 1.5,
+        },
+        "<"
+      )
+      .fromTo(
+        this.worksLine,
+        { width: "0%" },
+        { width: "100%", duration: 0.6, ease: "expo.out" },
+        "<0.9"
+      );
     return tl;
   }
 
@@ -54,23 +71,23 @@ class Nav {
       this.mobileMenuIcon,
       { rotation: 0 },
       { rotation: 45, duration: 1, ease: "expo.out" }
-    );
-    tl.fromTo(this.main, { opacity: 1 }, { opacity: 0.3, duration: 0.6 }, "<");
-    tl.fromTo(
-      this.mobileMenu,
-      {
-        clipPath: "polygon(0% 0%, 100% 0%, 100% 0%, 0% 0%)",
-        display: "none",
-      },
-      {
-        clipPath: "polygon(0% 0%, 100% 0%, 100% 100%, 0% 100%)",
-        display: "block",
-        ease: "expo.inOut",
-        delay: this.delay,
-        duration: 1.5,
-      },
-      "<"
-    );
+    )
+      .fromTo(this.main, { opacity: 1 }, { opacity: 0.3, duration: 0.6 }, "<")
+      .fromTo(
+        this.mobileMenu,
+        {
+          clipPath: "polygon(0% 0%, 100% 0%, 100% 0%, 0% 0%)",
+          display: "none",
+        },
+        {
+          clipPath: "polygon(0% 0%, 100% 0%, 100% 100%, 0% 100%)",
+          display: "block",
+          ease: "expo.inOut",
+          delay: this.delay,
+          duration: 1.5,
+        },
+        "<"
+      );
     return tl;
   }
 
@@ -299,23 +316,11 @@ class LoaderAnimator {
               let mainItem = this.mainItems.filter(
                 (item) => parseInt(item.getAttribute("data-flip-id")) === flipId
               );
-              //console.log(mainItem);
               container.append(mainItem[0].querySelector("img"));
-
-              /*
-              Flip.fit(this.mainItems[index].querySelector("img"), container, {
-                duration: 2,
-                //scale: true,
-                ease: "power2.in",
-              });
-
-               */
             });
 
             Flip.from(this.state, {
               duration: 1,
-              //absolute: true,
-              //scale: true,
               zIndex: -1,
               ease: "power4.out",
               onComplete: () => {
@@ -346,6 +351,7 @@ class LoaderAnimator {
 
 let gallerySnap = null;
 
+/*
 class GalleryScroller {
   constructor(container) {
     this.initializeProperties(container);
@@ -524,6 +530,8 @@ class GalleryScroller {
   }
 }
 
+ */
+
 class SectionNavigator {
   constructor(container) {
     // Initialize properties
@@ -608,7 +616,7 @@ class SectionNavigator {
   }
 
   initEventListeners() {
-    Observer.create({
+    ScrollTrigger.observe({
       type: "wheel,touch,pointer",
       wheelSpeed: -1,
       onDown: () =>
@@ -617,7 +625,6 @@ class SectionNavigator {
       tolerance: 10,
       preventDefault: true,
     });
-
     this.thumbnails.forEach((thumbnail, index) => {
       thumbnail.addEventListener("click", () => {
         if (index !== this.currentIndex) {
@@ -734,36 +741,18 @@ class HomeAnimation {
       },
       opacity: 0,
     });
-    console.log(this.progress);
-    this.tl1.progress(this.progress / 100);
+    //this.tl1.progress(this.progress / 100);
     this.getP();
   }
 
   setUpListeners() {
-    this.viewBtns.forEach((btn) => {
-      btn.addEventListener("click", () => {
-        this.view = btn.getAttribute("data-view");
-        this.viewBtns.forEach((btn) => {
-          btn.classList.remove("current");
-        });
-        btn.classList.add("current");
+    this.container.addEventListener("click", (event) => {
+      if (event.target.classList.contains("view-link")) {
+        this.view = event.target.getAttribute("data-view");
+        this.viewBtns.forEach((btn) => btn.classList.remove("current"));
+        event.target.classList.add("current");
         this.switchViews(this.view);
-        /*
-        switch (this.view) {
-          case "grid-view":
-            //this.gridScroll.enable();
-            this.switchViews(this.view);
-            break;
-          case "list-view":
-            //this.gridScroll.disable();
-            this.switchViews(this.view);
-            break;
-          default:
-            break;
-        }
-
-         */
-      });
+      }
     });
   }
 
@@ -791,7 +780,6 @@ class HomeAnimation {
     mTitles.forEach(
       (el) => (height += el.offsetHeight + window.innerHeight * 0.12)
     );
-    console.log(height);
     return height;
   };
 
@@ -815,15 +803,20 @@ class HomeAnimation {
       pin: this.homeIntro,
       scrub: 0.1,
       immediateRender: false,
+      //animation: this.tl1,
       onUpdate: (self) => {
         this.progress = self.progress * 100;
-        this.progress = gsap.utils.clamp(0, 98.5, this.progress);
-        this.tl1.progress(this.progress / 100);
+        this.progress = gsap.utils.clamp(0, 100, this.progress);
+        let m = (this.progress / 100) * 1800 * this.numItems;
+        // Refactored to apply the z transformation directly
+        gsap.set(this.workItems, {
+          z: (i) => {
+            return (i + 1) * -1800 + m;
+          },
+        });
         this.getP();
       },
     });
-
-    console.log(this.gridScroll);
 
     ScrollTrigger.create({
       trigger: this.container,
@@ -887,6 +880,7 @@ class HomeAnimation {
 
     // Additional timeline configurations
     // ...
+    /*
     this.tl1 = gsap.timeline({ paused: true });
 
     this.tl1.to(this.workItems, {
@@ -897,61 +891,65 @@ class HomeAnimation {
       ease: "linear",
     });
 
-    let tlZoom = gsap.timeline({
-      scrollTrigger: {
-        trigger: this.homeWorksContainer,
-        start: "top 15%",
-        end: "top top",
-        scrub: 1,
-        ease: "linear",
-        onEnter: () => {
-          gsap.to(this.viewSwitch, {
-            opacity: 1,
-            visibility: "visible",
-            duration: 0.3,
-          });
-        },
-        onLeaveBack: () => {
-          gsap.to(this.viewSwitch, {
-            opacity: 0,
-            visibility: "hidden",
-            duration: 0.3,
-          });
-        },
-        // markers: true,
-      },
-    });
-    tlZoom.to(this.homeWorksWrapper, { z: 0 });
-    tlZoom.from(this.homeWorksWrapper, { opacity: 0 }, "0");
+     */
 
-    let tlZoom2 = gsap.timeline({
-      scrollTrigger: {
-        trigger: this.homeWorksContainer,
-        start: "top top",
-        scrub: true,
-      },
-    });
-    tlZoom2.to(this.bgListContainer, { opacity: 1 });
-    tlZoom2.from(this.textMask, { opacity: 0 });
+    let tlZoom = gsap
+      .timeline({
+        scrollTrigger: {
+          trigger: this.homeWorksContainer,
+          start: "top 15%",
+          end: "top top",
+          scrub: 1,
+          ease: "linear",
+          onEnter: () => {
+            gsap.to(this.viewSwitch, {
+              opacity: 1,
+              visibility: "visible",
+              duration: 0.3,
+            });
+          },
+          onLeaveBack: () => {
+            gsap.to(this.viewSwitch, {
+              opacity: 0,
+              visibility: "hidden",
+              duration: 0.3,
+            });
+          },
+          // markers: true,
+        },
+      })
+      .to(this.homeWorksWrapper, { z: 0 })
+      .from(this.homeWorksWrapper, { opacity: 0 }, "0");
+
+    let tlZoom2 = gsap
+      .timeline({
+        scrollTrigger: {
+          trigger: this.homeWorksContainer,
+          start: "top top",
+          scrub: true,
+        },
+      })
+      .to(this.bgListContainer, { opacity: 1 })
+      .from(this.textMask, { opacity: 0 });
 
     this.tlList = gsap.timeline({
       paused: true,
-      //onComplete: this.textAnim.animateText(0, 120, 2),
     });
-    this.tlList.to(this.workItemsOdd, {
-      x: "25vw",
-    });
-    this.tlList.to(this.workItemsEven, { x: "-25vw" }, "<");
-    this.tlList.to(".home-works-name", { opacity: 0 }, "<");
-    this.tlList.to(this.bgListContainer, { filter: "blur(0px)" }, "<");
-    this.tlList.to(this.listViewWrapper, { opacity: 1, zIndex: 3 }, "<");
-    this.tlList.fromTo(
-      this.workItems,
-      {
-        "clip-path": "polygon(0% 0%, 100% 0%, 100% 100%, 0% 100%)",
-      },
-      { "clip-path": "polygon(45% 50%, 55% 50%, 50% 50%, 50% 50%)" }
-    );
+    this.tlList
+      .to(this.workItemsOdd, {
+        x: "25vw",
+      })
+      .to(this.workItemsEven, { x: "-25vw" }, "<")
+      .to(".home-works-name", { opacity: 0 }, "<")
+      .to(this.bgListContainer, { filter: "blur(0px)" }, "<")
+      .to(this.listViewWrapper, { opacity: 1, zIndex: 3 }, "<")
+      .fromTo(
+        this.workItems,
+        {
+          "clip-path": "polygon(0% 0%, 100% 0%, 100% 100%, 0% 100%)",
+        },
+        { "clip-path": "polygon(45% 50%, 55% 50%, 50% 50%, 50% 50%)" }
+      );
   }
 
   getP = () => {
@@ -999,13 +997,471 @@ class HomeAnimation {
   };
 }
 
+class ParticleImage {
+  constructor() {
+    this.home = null;
+    this.canvas = null;
+    this.title = null;
+    this.camera = null;
+    this.scene = null;
+    this.renderer = null;
+    this.mouse = new THREE.Vector2();
+    this.windowHalfX = window.innerWidth / 2;
+    this.windowHalfY = window.innerHeight / 2;
+    this.raycaster = null;
+    this.clock = null;
+    this.orbit = null;
+    this.particles = {};
+    this.imageParticlesSystem = null;
+    this.planeHelperObject = [];
+    this.particleCanvas = null;
+    this.guiParams = {};
+    this.cameraNearPlane = 0.1;
+    this.cameraFarPlane = 1000;
+
+    this.init();
+  }
+
+  init() {
+    window.onload = this.initParticleImage.bind(this);
+  }
+
+  initParticleImage() {
+    // creating canvas and context objects
+    this.canvas = document.getElementById("canvas");
+    this.home = document.getElementById("home");
+
+    // preparing scene
+    this.scene = new THREE.Scene();
+
+    // preparing camera
+    this.camera = new THREE.PerspectiveCamera(
+      45,
+      window.innerWidth / window.innerHeight,
+      this.cameraNearPlane,
+      this.cameraFarPlane
+    );
+    this.camera.lookAt(new THREE.Vector3(0, 0, 0));
+    this.camera.position.set(0, 0, 700);
+    this.scene.add(this.camera);
+
+    this.mouse = new THREE.Vector2();
+
+    // preparing canvas to get image data
+    let coordinateCanvas = document.createElement("canvas");
+    let ctx = coordinateCanvas.getContext("2d");
+
+    this.particleCanvas = {};
+
+    this.particleCanvas.width = 1500;
+    this.particleCanvas.height = 600;
+
+    coordinateCanvas.width = this.particleCanvas.width;
+    coordinateCanvas.height = this.particleCanvas.height;
+
+    // translate context to center of canvas
+    ctx.translate(0, this.particleCanvas.height);
+
+    // flip context vertically
+    ctx.scale(1, -1);
+
+    // write on canvas
+    ctx.font = "250pt Romie";
+    ctx.textAlign = "center";
+    ctx.textBaseline = "middle";
+    ctx.fillStyle = "#ffffff";
+    ctx.fillText(
+      "404",
+      coordinateCanvas.width / 2,
+      coordinateCanvas.height / 2
+    );
+
+    // get image data
+    let data = ctx.getImageData(
+      0,
+      0,
+      coordinateCanvas.width,
+      coordinateCanvas.height
+    );
+    ctx.clearRect(0, 0, coordinateCanvas.width, coordinateCanvas.height);
+
+    // fill our particles coordinate array
+    this.particles.initPositions = new Array();
+    this.particles.minPositions = new Array();
+    this.particles.maxPositions = new Array();
+    this.particles.noiseValues = new Array();
+    this.particles.colors = new Array();
+
+    for (let y = 0, y2 = data.height; y < y2; y++) {
+      for (let x = 0, x2 = data.width; x < x2; x++) {
+        // if we got a white pixel from our text, create a particle
+        if (data.data[x * 4 + y * 4 * data.width] > 128) {
+          let maxZ = Math.random() * 2000 + (this.camera.position.z + 10);
+
+          // before imploding
+          this.particles.initPositions.push(x);
+          this.particles.initPositions.push(y);
+          this.particles.initPositions.push(maxZ);
+
+          // after imploding
+          this.particles.minPositions.push(x);
+          this.particles.minPositions.push(y);
+          this.particles.minPositions.push(0);
+
+          // before imploding
+          this.particles.maxPositions.push(x);
+          this.particles.maxPositions.push(y);
+          this.particles.maxPositions.push(maxZ);
+
+          let color = new THREE.Color("#B5650E");
+          this.particles.colors.push(color.r, color.g, color.b);
+
+          let noiseX = Math.random() * 20 - 10;
+          let noiseY = Math.random() * 20 - 10;
+
+          this.particles.noiseValues.push(noiseX);
+          this.particles.noiseValues.push(noiseY);
+        }
+      }
+    }
+
+    // plane helper for the raycaster
+    let planeHelperGeometry = new THREE.PlaneGeometry(10000, 10000);
+    let planeHelperMaterial = new THREE.MeshBasicMaterial({
+      color: 0x000000,
+      transparent: true,
+      opacity: 0,
+    });
+
+    let planeHelper = new THREE.Mesh(planeHelperGeometry, planeHelperMaterial);
+
+    this.planeHelperObject.push(planeHelper);
+    this.scene.add(planeHelper);
+
+    // preparing our buffer geometry
+    let imageParticlesGeometry = new THREE.BufferGeometry();
+
+    imageParticlesGeometry.setAttribute(
+      "position",
+      new THREE.Float32BufferAttribute(this.particles.initPositions, 3)
+    );
+    imageParticlesGeometry.setAttribute(
+      "minPosition",
+      new THREE.Float32BufferAttribute(this.particles.minPositions, 3)
+    );
+    imageParticlesGeometry.setAttribute(
+      "maxPosition",
+      new THREE.Float32BufferAttribute(this.particles.maxPositions, 3)
+    );
+    imageParticlesGeometry.setAttribute(
+      "color",
+      new THREE.Float32BufferAttribute(this.particles.colors, 3)
+    );
+    imageParticlesGeometry.setAttribute(
+      "noiseValue",
+      new THREE.Float32BufferAttribute(this.particles.noiseValues, 2)
+    );
+    imageParticlesGeometry.setAttribute(
+      "mouseRepulsion",
+      new THREE.Float32BufferAttribute(this.particles.mouseRepulsion, 1)
+    );
+
+    // our uniforms
+    let uniforms = {
+      uDuration: {
+        type: "f",
+        value: 180, // 3 seconds
+      },
+      uElapsedTime: {
+        type: "f",
+        value: 0,
+      },
+      uSize: {
+        type: "f",
+        value: 3,
+      },
+      uNoise: {
+        type: "f",
+        value: 8,
+      },
+      uMousePosition: {
+        type: "v2",
+        value: new THREE.Vector2(),
+      },
+      uMouseRadius: {
+        type: "f",
+        value: 100,
+      },
+      uMouseStrength: {
+        type: "f",
+        value: 0.75,
+      },
+    };
+
+    let imageParticlesMaterial = new THREE.ShaderMaterial({
+      uniforms: uniforms,
+      vertexShader: document.getElementById("particle-image-vs").textContent,
+      fragmentShader: document.getElementById("particle-image-fs").textContent,
+    });
+
+    // create the particle system
+    this.imageParticlesSystem = new THREE.Points(
+      imageParticlesGeometry,
+      imageParticlesMaterial
+    );
+
+    this.imageParticlesSystem.position.x = (-1 * this.particleCanvas.width) / 2;
+    this.imageParticlesSystem.position.y =
+      (-1 * this.particleCanvas.height) / 2;
+
+    // add it to the scene
+    this.scene.add(this.imageParticlesSystem);
+
+    // preparing new renderer and drawing it
+    this.renderer = new THREE.WebGLRenderer({
+      alpha: true,
+      antialias: false,
+    });
+    this.renderer.setSize(window.innerWidth, window.innerHeight);
+    this.renderer.setPixelRatio(window.devicePixelRatio);
+
+    this.canvas.appendChild(this.renderer.domElement);
+
+    // get the main title HTML element
+    this.title = document.getElementById("title").getElementsByTagName("h2")[0];
+
+    // change positions by mouse
+    document.addEventListener("mousemove", this.onMousemove.bind(this), false);
+
+    // change canvas size on resize
+    window.addEventListener("resize", this.onResize.bind(this), false);
+
+    this.clock = new THREE.Clock();
+    this.clock.start();
+
+    // mouse interaction
+    this.raycaster = new THREE.Raycaster();
+
+    // ready to go
+    document.body.classList.add("renderer-ready");
+
+    this.animate();
+  }
+
+  onMousemove(event) {
+    // used in the raycaster
+    this.mouse.x = (event.clientX / window.innerWidth) * 2 - 1;
+    this.mouse.y = -(event.clientY / window.innerHeight) * 2 + 1;
+
+    // translate the title
+    let titleTranslation = {
+      x: -(event.clientX - window.innerWidth / 2) / 10,
+      y: -(event.clientY - window.innerHeight / 2) / 10,
+    };
+
+    this.title.style.transform =
+      "translate3d(" +
+      titleTranslation.x +
+      "px, " +
+      titleTranslation.y +
+      "px, 0)";
+  }
+
+  onResize(event) {
+    this.camera.aspect = window.innerWidth / window.innerHeight;
+    this.camera.updateProjectionMatrix();
+    this.renderer.setSize(window.innerWidth, window.innerHeight);
+  }
+
+  animate() {
+    requestAnimationFrame(this.animate.bind(this));
+
+    let mouseX, mouseY;
+
+    this.raycaster.setFromCamera(this.mouse, this.camera);
+    let intersects;
+    intersects = this.raycaster.intersectObjects(this.planeHelperObject, true);
+
+    if (intersects.length > 0) {
+      let intersection = intersects[0];
+      mouseX = intersection.point.x + this.particleCanvas.width / 2;
+      mouseY = intersection.point.y + this.particleCanvas.height / 2;
+    }
+
+    // animate here
+    if (this.imageParticlesSystem.material.uniforms) {
+      this.imageParticlesSystem.material.uniforms.uElapsedTime.value++;
+
+      this.imageParticlesSystem.material.uniforms.uMousePosition.value.x =
+        mouseX;
+      this.imageParticlesSystem.material.uniforms.uMousePosition.value.y =
+        mouseY;
+    }
+
+    this.renderer.render(this.scene, this.camera);
+  }
+}
+
+class SeamlessLoopAnimator {
+  constructor() {
+    this.iteration = 0; // Iteration counter
+    this.spacing = 0.15; // Spacing of the cards
+    this.cards = gsap.utils.toArray(".works-list-item");
+    this.cardsListWrapper = document.querySelector(".works-list-wrapper");
+    this.seamlessLoop = this.buildSeamlessLoop(this.cards, this.spacing);
+    this.scrub = gsap.to(this.seamlessLoop, {
+      totalTime: 0,
+      duration: 0.5,
+      ease: "power3",
+      paused: true,
+    });
+
+    // Initialize the scroll trigger
+    this.initScrollTrigger();
+  }
+
+  wrapForward(trigger) {
+    this.iteration++;
+    trigger.wrapping = true;
+    trigger.scroll(trigger.start + 1);
+  }
+
+  wrapBackward(trigger) {
+    this.iteration--;
+    if (this.iteration < 0) {
+      this.iteration = 9;
+      this.seamlessLoop.totalTime(
+        this.seamlessLoop.totalTime() + this.seamlessLoop.duration() * 10
+      );
+      this.scrub.pause();
+    }
+    trigger.wrapping = true;
+    trigger.scroll(trigger.end - 1);
+  }
+
+  scrubTo(totalTime) {
+    let progress =
+      (totalTime - this.seamlessLoop.duration() * this.iteration) /
+      this.seamlessLoop.duration();
+    if (progress > 1) {
+      this.wrapForward(this.trigger);
+    } else if (progress < 0) {
+      this.wrapBackward(this.trigger);
+    } else {
+      this.trigger.scroll(
+        this.trigger.start + progress * (this.trigger.end - this.trigger.start)
+      );
+    }
+  }
+
+  buildSeamlessLoop(items, spacing) {
+    let overlap = Math.ceil(1 / spacing), // number of EXTRA animations on either side of the start/end to accommodate the seamless looping
+      startTime = items.length * spacing + 0.5, // the time on the rawSequence at which we'll start the seamless loop
+      loopTime = (items.length + overlap) * spacing + 1, // the spot at the end where we loop back to the startTime
+      rawSequence = gsap.timeline({ paused: true }), // this is where all the "real" animations live
+      seamlessLoop = gsap.timeline({
+        // this merely scrubs the playhead of the rawSequence so that it appears to seamlessly loop
+        paused: true,
+        repeat: -1, // to accommodate infinite scrolling/looping
+        onRepeat() {
+          // works around a super rare edge case bug that's fixed GSAP 3.6.1
+          this._time === this._dur && (this._tTime += this._dur - 0.01);
+        },
+      }),
+      l = items.length + overlap * 2,
+      time = 0,
+      i,
+      index,
+      item;
+
+    // set initial state of items
+    gsap.set(items, { xPercent: 400, opacity: 0, scale: 0 });
+
+    // now loop through and create all the animations in a staggered fashion. Remember, we must create EXTRA animations at the end to accommodate the seamless looping.
+    for (i = 0; i < l; i++) {
+      index = i % items.length;
+      item = items[index];
+      time = i * spacing;
+      rawSequence
+        .fromTo(
+          item,
+          { scale: 0, opacity: 0 },
+          {
+            scale: 1,
+            opacity: 1,
+            zIndex: 100,
+            duration: 0.5,
+            yoyo: true,
+            repeat: 1,
+            ease: "power1.in",
+            immediateRender: false,
+          },
+          time
+        )
+        .fromTo(
+          item,
+          { xPercent: 400 },
+          { xPercent: -400, duration: 1, ease: "none", immediateRender: false },
+          time
+        );
+      i <= items.length && seamlessLoop.add("label" + i, time); // we don't really need these, but if you wanted to jump to key spots using labels, here ya go.
+    }
+
+    // here's where we set up the scrubbing of the playhead to make it appear seamless.
+    rawSequence.time(startTime);
+    seamlessLoop
+      .to(rawSequence, {
+        time: loopTime,
+        duration: loopTime - startTime,
+        ease: "none",
+      })
+      .fromTo(
+        rawSequence,
+        { time: overlap * spacing + 1 },
+        {
+          time: startTime,
+          duration: startTime - (overlap * spacing + 1),
+          immediateRender: false,
+          ease: "power1.in",
+        }
+      );
+    return seamlessLoop;
+  }
+
+  initScrollTrigger() {
+    this.trigger = ScrollTrigger.create({
+      start: 0,
+      onUpdate: (self) => {
+        const snap = gsap.utils.snap(this.spacing);
+        if (self.progress === 1 && self.direction > 0 && !self.wrapping) {
+          this.wrapForward(self);
+        } else if (
+          self.progress < 1e-5 &&
+          self.direction < 0 &&
+          !self.wrapping
+        ) {
+          this.wrapBackward(self);
+        } else {
+          this.scrub.vars.totalTime = snap(
+            (this.iteration + self.progress) * this.seamlessLoop.duration()
+          );
+          this.scrub.invalidate().restart();
+          self.wrapping = false;
+        }
+      },
+      end: "+=3000",
+      pin: ".works-list-wrapper",
+    });
+  }
+}
+
 barba.hooks.beforeLeave((data) => {
   gsap.getTweensOf("*").forEach((animation) => {
     animation.kill();
   });
   ScrollTrigger.clearScrollMemory();
   ScrollTrigger.removeEventListener("scrollEnd", gallerySnap);
-  Observer.getAll().forEach((o) => o.kill());
+  // Observer.getAll().forEach((o) => o.kill());
   ScrollTrigger.getAll().forEach((t) => t.kill());
   console.log(gsap.getTweensOf("*"));
 
@@ -1074,7 +1530,8 @@ barba.init({
       beforeEnter(data) {
         let nextContainer = data.next.container;
         Splitting();
-        new GalleryScroller(nextContainer);
+        new SeamlessLoopAnimator();
+        //new GalleryScroller(nextContainer);
         new Nav(nextContainer);
       },
     },
@@ -1093,6 +1550,12 @@ barba.init({
       beforeEnter(data) {
         let nextContainer = data.next.container;
         new Nav(nextContainer);
+      },
+    },
+    {
+      namespace: "404",
+      beforeEnter() {
+        new ParticleImage();
       },
     },
   ],
@@ -1124,4 +1587,9 @@ barba.init({
 
 window.addEventListener("DOMContentLoaded", () => {
   gsap.from("body", { autoAlpha: 0, duration: 1, ease: "linear" });
+  gsap.to(":root", {
+    duration: window.location.pathname === "/" ? 8 : 1,
+    ease: "power1.out",
+    "--visual-hidden": 1, // Targeting the CSS variable
+  });
 });
