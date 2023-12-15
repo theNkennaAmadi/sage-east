@@ -353,7 +353,6 @@ class LoaderAnimator {
 
 let gallerySnap = null;
 
-/*
 class GalleryScroller {
   constructor(container) {
     this.initializeProperties(container);
@@ -531,8 +530,6 @@ class GalleryScroller {
     this.scrub.invalidate().restart();
   }
 }
-
- */
 
 class SectionNavigator {
   constructor(container) {
@@ -1304,6 +1301,7 @@ class ParticleImage {
   }
 }
 
+/*
 class SeamlessLoopAnimator {
   constructor() {
     this.iteration = 0; // Iteration counter
@@ -1457,6 +1455,8 @@ class SeamlessLoopAnimator {
   }
 }
 
+ */
+
 barba.hooks.beforeLeave((data) => {
   gsap.getTweensOf("*").forEach((animation) => {
     animation.kill();
@@ -1537,8 +1537,8 @@ barba.init({
           duration: 1,
           ease: "expo",
         });
-        new SeamlessLoopAnimator();
-        //new GalleryScroller(nextContainer);
+        //new SeamlessLoopAnimator();
+        new GalleryScroller(nextContainer);
         new Nav(nextContainer);
       },
     },
