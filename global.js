@@ -1431,7 +1431,8 @@ barba.init({
 window.addEventListener("DOMContentLoaded", () => {
   gsap.from("body", { autoAlpha: 0, duration: 1, ease: "linear" });
   gsap.to(":root", {
-    duration: window.location.pathname === "/" ? 8 : 1,
+    duration: 1,
+    delay: window.location.pathname === "/" ? 5 : 0,
     ease: "power1.out",
     "--visual-hidden": 1, // Targeting the CSS variable
   });
