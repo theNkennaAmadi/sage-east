@@ -1451,7 +1451,7 @@ class SeamlessLoopAnimator {
           self.wrapping = false;
         }
       },
-      end: "+" + `${workItems.length * 100}`,
+      end: "+" + `${this.cards.length * 100}`,
       pin: ".works-list-wrapper",
     });
   }
