@@ -4,6 +4,7 @@ gsap.registerPlugin(ScrollTrigger, Draggable, Flip);
  * Lenis Initialization
  *
  */
+/*
 const lenis = new Lenis();
 
 lenis.on("scroll", ScrollTrigger.update);
@@ -14,6 +15,7 @@ gsap.ticker.add((time) => {
 
 gsap.ticker.lagSmoothing(0);
 
+ */
 /**
  * Class Initialization
  */
