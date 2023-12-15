@@ -495,7 +495,6 @@ class GalleryScroller {
       (snappedTime - this.seamlessLoop.duration() * this.iteration) /
       this.seamlessLoop.duration();
     this.scroll = this.progressToScroll(progress);
-    console.log(this.scroll);
 
     if (progress >= 1 || progress < 0) {
       this.wrap(Math.floor(progress), this.scroll);
@@ -1307,7 +1306,6 @@ barba.hooks.beforeLeave((data) => {
   ScrollTrigger.removeEventListener("scrollEnd", gallerySnap);
   // Observer.getAll().forEach((o) => o.kill());
   ScrollTrigger.getAll().forEach((t) => t.kill());
-  console.log(gsap.getTweensOf("*"));
 
   window.scroll(0, 0);
   if (history.scrollRestoration) {
