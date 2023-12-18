@@ -1,4 +1,4 @@
-gsap.registerPlugin(ScrollTrigger, Draggable, Flip);
+gsap.registerPlugin(ScrollTrigger, Flip);
 
 /**
  * Lenis Initialization
@@ -310,7 +310,6 @@ class LoaderAnimator {
           setTimeout(() => {
             this.finalContainers.forEach((container, index) => {
               //container.append(this.items[index]);
-
               const flipId = parseInt(container.getAttribute("data-flip-id"));
               //console.log(flipId);
               let mainItem = this.mainItems.filter(
@@ -355,7 +354,6 @@ class GalleryScroller {
   constructor(container) {
     this.initializeProperties(container);
     this.setupScrollTrigger();
-    this.setupDraggable();
     this.setupInitialAnimations();
   }
 
@@ -364,10 +362,11 @@ class GalleryScroller {
     this.spacing = 0.15;
     this.snapTime = gsap.utils.snap(this.spacing);
     this.cards = [...container.querySelectorAll(".works-list-item")];
+    this.cardsCount = this.cards.length;
     this.cardsList = container.querySelector(".works-list");
     this.cardsListWrapper = container.querySelector(".works-list-wrapper");
     this.sectionWrapper = container.querySelector("[visibility-hidden]");
-    this.dragWrapper = container.querySelector(".drag-proxy");
+    this.workNavigator = container.querySelector(".work-navigator");
     this.seamlessLoop = this.buildSeamlessLoop(
       this.cards,
       this.spacing,
@@ -382,21 +381,11 @@ class GalleryScroller {
     this.trigger = ScrollTrigger.create({
       start: 0,
       onUpdate: this.onScrollUpdate.bind(this),
-      end: "+=3000",
+      end: `+=${(this.cardsCount - 0) * 100}`,
       pin: this.cardsListWrapper,
     });
 
     ScrollTrigger.addEventListener("scrollEnd", gallerySnap);
-  }
-
-  setupDraggable() {
-    Draggable.create(this.dragWrapper, {
-      type: "x",
-      trigger: this.cardsList,
-      onPress: this.onPress.bind(this),
-      onDrag: this.onDrag.bind(this),
-      onDragEnd: () => this.scrollToOffset(this.scrub.vars.offset),
-    });
   }
 
   setupInitialAnimations() {
@@ -410,6 +399,9 @@ class GalleryScroller {
       ease: "power3",
       paused: true,
     });
+
+    this.cardsListWrapper.appendChild(this.workNavigator);
+    this.navigator();
   }
 
   animateFunc(element) {
@@ -438,7 +430,7 @@ class GalleryScroller {
 
   buildSeamlessLoop(items, spacing, animateFunc) {
     let rawSequence = gsap.timeline({ paused: true }),
-      seamlessLoop = gsap.timeline({
+      seamlessLoop1 = gsap.timeline({
         paused: true,
         repeat: -1,
         onRepeat: () => {
@@ -460,12 +452,12 @@ class GalleryScroller {
         dur || (dur = anim.duration());
       });
 
-    seamlessLoop.fromTo(
+    seamlessLoop1.fromTo(
       rawSequence,
       { time: cycleDuration + dur / 2 },
       { time: "+=" + cycleDuration, duration: cycleDuration, ease: "none" }
     );
-    return seamlessLoop;
+    return seamlessLoop1;
   }
 
   onScrubUpdate() {
@@ -518,13 +510,22 @@ class GalleryScroller {
     this.trigger.update();
   }
 
-  onPress() {
-    this.startOffset = this.scrub.vars.offset;
-  }
-
-  onDrag() {
-    this.scrub.vars.offset = this.startOffset + (this.startX - this.x) * 0.001;
-    this.scrub.invalidate().restart();
+  navigator() {
+    let scrollToOffset = this.scrollToOffset.bind(this);
+    let scrub = this.scrub;
+    let spacing = this.spacing;
+    this.workNavigator.addEventListener("click", function (event) {
+      // Check if the clicked element has a 'data-work-nav' attribute
+      let clickedElement = event.target.closest("[data-work-nav]");
+      console.log(clickedElement);
+      if (clickedElement) {
+        if (clickedElement.dataset.workNav === "next") {
+          scrollToOffset(scrub.vars.offset + spacing);
+        } else if (clickedElement.dataset.workNav === "prev") {
+          scrollToOffset(scrub.vars.offset - spacing);
+        }
+      }
+    });
   }
 }
 
@@ -1310,7 +1311,7 @@ barba.hooks.beforeLeave((data) => {
 
   window.scroll(0, 0);
   if (history.scrollRestoration) {
-    history.scrollRestoration = "manual";
+    //history.scrollRestoration = "manual";
   }
 });
 
