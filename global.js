@@ -14,18 +14,6 @@ gsap.ticker.add((time) => {
 
 gsap.ticker.lagSmoothing(0);
 
-function resetWebflow(data) {
-  let parser = new DOMParser();
-  let dom = parser.parseFromString(data.next.html, "text/html");
-  //console.log(dom);
-  let webflowPageId = $(dom).find("html").attr("data-wf-page");
-  //console.log(webflowPageId);
-  $("html").attr("data-wf-page", webflowPageId);
-  window.Webflow && window.Webflow.destroy();
-  window.Webflow && window.Webflow.ready();
-  window.Webflow && window.Webflow.require("ix2").init();
-}
-
 /**
  * Class Initialization
  */
@@ -216,6 +204,8 @@ class IntroAnimator {
         .querySelector(".hero-intro-container")
         .querySelectorAll("[data-splitting]"),
     ];
+    this.arrowTop = container.querySelector(".arrow-wrapper.top");
+    this.arrowBottom = container.querySelector(".arrow-wrapper.bottom");
     this.delay = delay;
     this.init();
   }
@@ -228,6 +218,16 @@ class IntroAnimator {
       word.parentNode.insertBefore(wrapper, word);
       wrapper.appendChild(word);
     });
+  }
+
+  arrowLoop() {
+    let tl = gsap.timeline({ repeat: -1 });
+    tl.set([this.arrowTop, this.arrowBottom], { opacity: 0 });
+    tl.set(this.arrowTop, { yPercent: -10 });
+    tl.to(this.arrowTop, { opacity: 1, yPercent: 0, duration: 0.5 });
+    tl.to(this.arrowBottom, { opacity: 1, duration: 0.5 });
+    tl.to([this.arrowTop, this.arrowBottom], { opacity: 0, duration: 0.5 });
+    tl.to(this.arrowTop, { yPercent: -10, duration: 0.5 });
   }
 
   animateText(delay) {
@@ -393,7 +393,7 @@ class GalleryScroller {
     this.trigger = ScrollTrigger.create({
       start: 0,
       onUpdate: this.onScrollUpdate.bind(this),
-      end: `+=${(this.cardsCount - 0) * 100}`,
+      end: `+=${this.cardsCount * 4 * 100}`,
       pin: this.cardsListWrapper,
     });
 
@@ -1338,7 +1338,6 @@ barba.init({
         let nextContainer = data.next.container;
         Splitting();
         new Nav(nextContainer);
-        resetWebflow(nextContainer);
         let introA = new IntroAnimator(nextContainer);
         if (firstLoad) {
           new LoaderAnimator(nextContainer, introA);
