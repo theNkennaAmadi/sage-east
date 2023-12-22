@@ -258,6 +258,7 @@ class IntroAnimator {
 
   init() {
     this.wrapWords();
+    this.arrowLoop();
     //this.animateText(this.delay);
   }
 }
