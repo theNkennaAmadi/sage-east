@@ -14,6 +14,18 @@ gsap.ticker.add((time) => {
 
 gsap.ticker.lagSmoothing(0);
 
+function resetWebflow(data) {
+  let parser = new DOMParser();
+  let dom = parser.parseFromString(data.next.html, "text/html");
+  //console.log(dom);
+  let webflowPageId = $(dom).find("html").attr("data-wf-page");
+  //console.log(webflowPageId);
+  $("html").attr("data-wf-page", webflowPageId);
+  window.Webflow && window.Webflow.destroy();
+  window.Webflow && window.Webflow.ready();
+  window.Webflow && window.Webflow.require("ix2").init();
+}
+
 /**
  * Class Initialization
  */
@@ -1326,6 +1338,7 @@ barba.init({
         let nextContainer = data.next.container;
         Splitting();
         new Nav(nextContainer);
+        resetWebflow(nextContainer);
         let introA = new IntroAnimator(nextContainer);
         if (firstLoad) {
           new LoaderAnimator(nextContainer, introA);
