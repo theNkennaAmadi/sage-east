@@ -415,6 +415,7 @@ class GalleryScroller {
 
     this.cardsListWrapper.appendChild(this.workNavigator);
     this.navigator();
+    window.scroll(0, 1);
   }
 
   animateFunc(element) {
@@ -1319,12 +1320,12 @@ barba.hooks.beforeLeave((data) => {
   });
   ScrollTrigger.clearScrollMemory();
   ScrollTrigger.removeEventListener("scrollEnd", gallerySnap);
-  // Observer.getAll().forEach((o) => o.kill());
+  Observer.getAll().forEach((o) => o.kill());
   ScrollTrigger.getAll().forEach((t) => t.kill());
 
   window.scroll(0, 0);
   if (history.scrollRestoration) {
-    //history.scrollRestoration = "manual";
+    history.scrollRestoration = "manual";
   }
 });
 
