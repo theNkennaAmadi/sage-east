@@ -398,6 +398,7 @@ class GalleryScroller {
       onUpdate: this.onScrollUpdate.bind(this),
       end: `+=${this.cardsCount * 4 * 100}`,
       pin: this.cardsListWrapper,
+      pinType: "fixed",
     });
     //ScrollTrigger.normalizeScroll(true);
     //ScrollTrigger.config({ ignoreMobileResize: true });
