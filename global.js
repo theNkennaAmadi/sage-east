@@ -399,7 +399,7 @@ class GalleryScroller {
       end: `+=${this.cardsCount * 4 * 100}`,
       pin: this.cardsListWrapper,
     });
-    ScrollTrigger.normalizeScroll(true);
+    //ScrollTrigger.normalizeScroll(true);
     //ScrollTrigger.config({ ignoreMobileResize: true });
 
     ScrollTrigger.addEventListener("scrollEnd", gallerySnap);
