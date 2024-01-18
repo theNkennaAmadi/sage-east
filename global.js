@@ -266,7 +266,9 @@ class IntroAnimator {
 class LoaderAnimator {
   constructor(nextContainer, introA) {
     this.workImages = [...nextContainer.querySelectorAll(".works-intro-item")];
-    this.flipContainers = [...nextContainer.querySelectorAll(".hero-c")];
+    this.flipContainers = [
+      ...nextContainer.querySelectorAll(".hero-c"),
+    ].toReversed();
     this.finalContainers = [
       ...nextContainer.querySelectorAll("[data-hero-visual]"),
     ];
@@ -600,7 +602,7 @@ class SectionNavigator {
       if (this.desktopFlag) {
         gsap.to(this.thumbnailsList, {
           duration: 1,
-          y: `${-(index / this.sections.length) * 100}%`,
+          y: `${-(index / this.sections.length) * 70}%`,
           x: 0,
           ease: "power3.inOut",
         });
@@ -617,7 +619,7 @@ class SectionNavigator {
         gsap.to(this.thumbnailsList, {
           duration: 1,
           y: 0,
-          x: `${-(index / this.sections.length) * 100}%`,
+          x: `${-(index / this.sections.length) * 70}%`,
           ease: "power3.inOut",
         });
       }
@@ -632,6 +634,10 @@ class SectionNavigator {
       wheelSpeed: -1,
       onDown: () =>
         !this.animating && this.gotoSection(this.currentIndex - 1, -1),
+      onRight: () =>
+        !this.animating && this.gotoSection(this.currentIndex - 1, -1),
+      onLeft: () =>
+        !this.animating && this.gotoSection(this.currentIndex + 1, 1),
       onUp: () => !this.animating && this.gotoSection(this.currentIndex + 1, 1),
       tolerance: 10,
       preventDefault: true,
@@ -678,36 +684,36 @@ class HomeAnimation {
     this.homeWorksContainer = container.querySelector("#home-works");
     this.viewSwitch = container.querySelector(".view-switch");
     this.homeWorksWrapper = container.querySelector(".home-works-wrapper");
+    /*
+    this.z1 = Array.from({ length: 15 }, () => gsap.utils.random(-5000, -2000));
+    this.rotationX1 = Array.from({ length: 15 }, () =>
+      gsap.utils.random(-65, -25)
+    );
+    this.x1 = Array.from({ length: 15 }, () => gsap.utils.random(-150, 150));
+    this.y1 = Array.from({ length: 15 }, () => gsap.utils.random(-300, 300));
+
+     */
+
     this.z1 = [
-      -2280.66439, -4090.43074, -3814.42043, -3526.10922, -3438.33831,
-      -3977.22769, -2947.32029, -4917.0747, -2814.31399, -3264.86641,
-      -2076.61897, -4822.42077, -4368.84388, -3575.85789, -4060.62386,
-      -2997.28304, -3726.35285, -3119.24528, -4861.90888, -4942.12413,
-      -2105.98518, -3063.85445, -3234.32121, -2448.31374, -4909.65988,
-      -2673.39894, -2931.29392, -2609.19342, -4997.74786, -3815.48084,
+      -3200.35064, -2559.08714, -2775.71775, -4815.29581, -3814.68899,
+      -3583.51753, -2463.66212, -3916.04496, -2486.30334, -3390.29408,
+      -4233.88417, -4766.61891, -3042.12798, -4801.83282, -4864.305,
     ];
     this.rotationX1 = [
-      -46.88217, -30.32588, -28.24739, -45.87395, -64.4923, -41.22551,
-      -56.70349, -40.52322, -28.44805, -57.75579, -31.12526, -36.47417,
-      -33.61298, -27.84889, -52.21894, -53.44592, -52.7875, -60.55159,
-      -50.84154, -43.58872, -41.84512, -34.50578, -51.32885, -53.09134,
-      -59.61798, -36.72126, -43.09396, -63.48053, -50.89954, -47.45038,
+      -58.06434, -25.24322, -40.85629, -35.12773, -41.12393, -34.94301,
+      -47.25802, -51.41291, -31.94523, -49.66937, -58.01767, -42.61762,
+      -50.03867, -37.47516, -33.48596,
     ];
     this.x1 = [
-      31.34786, 33.75912, 78.84946, -116.37192, 46.40541, 88.96467, -74.66323,
-      -46.83478, -70.30599, 81.86534, -16.7544, -41.39884, 88.75294, 91.24341,
-      -47.76371, -57.57659, -94.61628, 19.8771, -12.55576, 145.99257, -58.57768,
-      -1.82074, 97.72864, 94.68089, 120.50039, -1.19648, 145.40075, 52.93923,
-      -70.35703, -45.39887,
+      98.50544, 316.7302, 1158.74411, 140.10253, 128.16992, 351.22075, 26.66366,
+      -76.27248, 112.19732, 102.23627, 4.89015, -96.16244, -127.1255, 24.58326,
+      -66.85337,
     ];
     this.y1 = [
-      13.10453, 291.57995, -286.78769, 194.36089, -296.30615, -103.70483,
-      284.80738, -49.27964, 225.80777, -13.89143, 224.39513, 120.50033,
-      37.30396, -139.84827, -282.30682, 55.85223, 34.37649, 111.7255, 273.34913,
-      -243.09868, 151.2216, 250.80852, -107.12769, -231.67495, 46.84137,
-      -277.76839, 265.60389, 155.55756, 205.66728, -65.64371,
+      -203.06147, 432.46917, 494.29357, -276.95668, -249.48436, 221.19232,
+      120.47313, -113.49692, 100.61608, -200.2815, -162.45049, 65.97466,
+      179.08119, 144.16415, 577.43862,
     ];
-
     this.targetZValue = 1;
     this.closestItem = null;
     this.closestZDifference = Infinity;
@@ -742,6 +748,7 @@ class HomeAnimation {
     gsap.set(this.visualLoader, { opacity: 1 });
     firstLoad ? lenis.stop() : lenis.start();
     firstLoad = false;
+    console.log(this.z1, this.rotationX1, this.x1, this.y1);
 
     //Initialize the z position of the grid items for scroll
     gsap.set(this.workItems, {
@@ -857,10 +864,10 @@ class HomeAnimation {
     // Define animations in the timeline
     timeline
       .set(this.gridItems, {
-        transformOrigin: "50% 0%",
+        transformOrigin: "50% 50%",
         z: (i) => this.z1[i],
         rotationX: (i) => this.rotationX1[i],
-        filter: "brightness(0%)",
+        filter: "brightness(20%)",
       })
       .to(
         this.gridItems,
@@ -882,7 +889,7 @@ class HomeAnimation {
       .fromTo(
         this.gridItemsInner,
         {
-          scale: 1.5,
+          scale: 0.9,
         },
         {
           scale: 0.5,
@@ -1340,29 +1347,78 @@ barba.init({
         let nextContainer = data.next.container;
         Splitting();
         new Nav(nextContainer);
-        let introA = new IntroAnimator(nextContainer);
-        if (firstLoad) {
-          new LoaderAnimator(nextContainer, introA);
-        } else {
-          gsap.to(".hero-visual-loader", { opacity: 0 });
-          gsap.to(".hero-visual-img", {
-            opacity: 1,
-            display: "block",
-            duration: 1,
+        htmx
+          .ajax("GET", "/homepage-collection/homepage", {
+            target: ".h-c-item.is-1",
+            select: ".works-intro-item:nth-of-type(1) > img",
+          })
+          .then(() => {
+            htmx
+              .ajax("GET", "/homepage-collection/homepage", {
+                target: ".h-c-item.is-2",
+                select: ".works-intro-item:nth-of-type(6) > img",
+              })
+              .then(() => {
+                htmx
+                  .ajax("GET", "/homepage-collection/homepage", {
+                    target: ".h-c-item.is-3",
+                    select: ".works-intro-item:nth-of-type(10) > img",
+                  })
+                  .then(() => {
+                    htmx
+                      .ajax("GET", "/homepage-collection/homepage", {
+                        target: ".works-intro-list-wrapper",
+                        select: "#works-intro-list",
+                      })
+                      .then(() => {
+                        htmx
+                          .ajax("GET", "/homepage-collection/homepage", {
+                            target: ".grid",
+                            select: ".grid-wrap",
+                          })
+                          .then(() => {
+                            // this code will be executed after the 'htmx:OnLoad' event,
+                            // and before the 'htmx:xhr:loadend' event
+                            //console.log("Content inserted successfully!");
+                            let introA = new IntroAnimator(nextContainer);
+                            let items =
+                              nextContainer.querySelectorAll(
+                                ".works-intro-item"
+                              );
+                            items.forEach((item, index) => {
+                              item.setAttribute("data-flip-id", index + 1);
+                            });
+                            console.log(items);
+                            if (firstLoad) {
+                              new LoaderAnimator(nextContainer, introA);
+                            } else {
+                              gsap.to(".hero-visual-loader", { opacity: 0 });
+                              gsap.to(".hero-visual-img", {
+                                opacity: 1,
+                                display: "block",
+                                duration: 1,
+                              });
+                              lenis.start();
+                              introA.animateText();
+                            }
+                            let textAnim = new TextAnimator(
+                              nextContainer.querySelector(
+                                ".home-list-view-wrapper"
+                              ),
+                              0,
+                              120,
+                              2,
+                              false
+                            );
+                            new HomeAnimation(nextContainer, textAnim);
+                          });
+                      });
+                  });
+              });
           });
-          lenis.start();
-          introA.animateText();
-        }
-        let textAnim = new TextAnimator(
-          nextContainer.querySelector(".home-list-view-wrapper"),
-          0,
-          120,
-          2,
-          false
-        );
-        new HomeAnimation(nextContainer, textAnim);
       },
     },
+
     {
       namespace: "contact",
       beforeEnter(data) {
