@@ -400,7 +400,7 @@ class GalleryScroller {
       pin: this.cardsListWrapper,
     });
     //ScrollTrigger.normalizeScroll(true);
-    ScrollTrigger.config({ ignoreMobileResize: true });
+    //ScrollTrigger.config({ ignoreMobileResize: true });
 
     ScrollTrigger.addEventListener("scrollEnd", gallerySnap);
   }
@@ -413,7 +413,7 @@ class GalleryScroller {
       offset: 0,
       onUpdate: this.onScrubUpdate.bind(this),
       duration: 0.5,
-      ease: "power3",
+      ease: "linear",
       paused: true,
     });
 
@@ -435,12 +435,12 @@ class GalleryScroller {
         yoyo: true,
         repeat: 1,
         ease: "power1.in",
-        immediateRender: false,
+        //immediateRender: false,
       }
     ).fromTo(
       element,
       { x: "400%" },
-      { x: "-400%", duration: 1, ease: "none", immediateRender: false },
+      { x: "-400%", duration: 1, ease: "power1.in" }, //immediateRender: false },
       0
     );
     return tl;
