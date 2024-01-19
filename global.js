@@ -538,7 +538,6 @@ class GalleryScroller {
     this.workNavigator.addEventListener("click", function (event) {
       // Check if the clicked element has a 'data-work-nav' attribute
       let clickedElement = event.target.closest("[data-work-nav]");
-      console.log(clickedElement);
       if (clickedElement) {
         if (clickedElement.dataset.workNav === "next") {
           scrollToOffset(scrub.vars.offset + spacing);
@@ -553,7 +552,6 @@ class GalleryScroller {
     let scrub = this.scrub;
     let cardsList = this.cardsList;
     let scrollToOffset = this.scrollToOffset.bind(this);
-    console.log("hello");
     galleryDrag = Draggable.create(".drag-wrapper", {
       type: "x",
       trigger: cardsList,
@@ -717,7 +715,6 @@ class HomeAnimation {
     );
     this.x1 = Array.from({ length: 15 }, () => gsap.utils.random(-150, 150));
     this.y1 = Array.from({ length: 15 }, () => gsap.utils.random(-300, 300));
-
      */
 
     this.z1 = [
@@ -774,7 +771,6 @@ class HomeAnimation {
     gsap.set(this.visualLoader, { opacity: 1 });
     firstLoad ? lenis.stop() : lenis.start();
     firstLoad = false;
-    console.log(this.z1, this.rotationX1, this.x1, this.y1);
 
     //Initialize the z position of the grid items for scroll
     gsap.set(this.workItems, {
@@ -1015,6 +1011,7 @@ class HomeAnimation {
       }
     });
     this.currIndex = this.workItems.indexOf(this.closestItem);
+
     if (this.currIndex !== this.newIndex) {
       gsap.to(this.bgItems[this.newIndex], { opacity: 0, duration: 0.3 });
       gsap.to(this.listViewItems[this.newIndex], {
@@ -1415,7 +1412,6 @@ barba.init({
                             items.forEach((item, index) => {
                               item.setAttribute("data-flip-id", index + 1);
                             });
-                            console.log(items);
                             if (firstLoad) {
                               new LoaderAnimator(nextContainer, introA);
                             } else {
