@@ -1,4 +1,4 @@
-gsap.registerPlugin(ScrollTrigger, Flip);
+gsap.registerPlugin(ScrollTrigger, Flip, Draggable);
 
 /**
  * Lenis Initialization
@@ -364,6 +364,7 @@ class LoaderAnimator {
 }
 
 let gallerySnap = null;
+let galleryDrag = [];
 
 class GalleryScroller {
   constructor(container) {
@@ -421,6 +422,7 @@ class GalleryScroller {
     this.cardsListWrapper.appendChild(this.workNavigator);
     this.navigator();
     window.scroll(0, 1);
+    this.draggable();
   }
 
   animateFunc(element) {
@@ -544,6 +546,27 @@ class GalleryScroller {
           scrollToOffset(scrub.vars.offset - spacing);
         }
       }
+    });
+  }
+
+  draggable() {
+    let scrub = this.scrub;
+    let cardsList = this.cardsList;
+    let scrollToOffset = this.scrollToOffset.bind(this);
+    console.log("hello");
+    galleryDrag = Draggable.create(".drag-wrapper", {
+      type: "x",
+      trigger: cardsList,
+      onPress() {
+        this.startOffset = scrub.vars.offset;
+      },
+      onDrag() {
+        scrub.vars.offset = this.startOffset + (this.startX - this.x) * 0.001;
+        scrub.invalidate().restart(); // same thing as we do in the ScrollTrigger's onUpdate
+      },
+      onDragEnd() {
+        scrollToOffset(scrub.vars.offset);
+      },
     });
   }
 }
@@ -1332,6 +1355,7 @@ barba.hooks.beforeLeave((data) => {
   ScrollTrigger.removeEventListener("scrollEnd", gallerySnap);
   Observer.getAll().forEach((o) => o.kill());
   ScrollTrigger.getAll().forEach((t) => t.kill());
+  galleryDrag[0].kill();
 
   window.scroll(0, 0);
   if (history.scrollRestoration) {
