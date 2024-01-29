@@ -709,13 +709,13 @@ class HomeAnimation {
     this.viewSwitch = container.querySelector(".view-switch");
     this.homeWorksWrapper = container.querySelector(".home-works-wrapper");
     /*
-    this.z1 = Array.from({ length: 15 }, () => gsap.utils.random(-5000, -2000));
-    this.rotationX1 = Array.from({ length: 15 }, () =>
-      gsap.utils.random(-65, -25)
-    );
-    this.x1 = Array.from({ length: 15 }, () => gsap.utils.random(-150, 150));
-    this.y1 = Array.from({ length: 15 }, () => gsap.utils.random(-300, 300));
-     */
+        this.z1 = Array.from({ length: 15 }, () => gsap.utils.random(-5000, -2000));
+        this.rotationX1 = Array.from({ length: 15 }, () =>
+          gsap.utils.random(-65, -25)
+        );
+        this.x1 = Array.from({ length: 15 }, () => gsap.utils.random(-150, 150));
+        this.y1 = Array.from({ length: 15 }, () => gsap.utils.random(-300, 300));
+         */
 
     this.z1 = [
       -3200.35064, -2559.08714, -2775.71775, -4815.29581, -3814.68899,
@@ -922,17 +922,17 @@ class HomeAnimation {
     // Additional timeline configurations
     // ...
     /*
-    this.tl1 = gsap.timeline({ paused: true });
+        this.tl1 = gsap.timeline({ paused: true });
 
-    this.tl1.to(this.workItems, {
-      z: 1300,
-      duration: (i) => {
-        return (i + 1) * 0.5;
-      },
-      ease: "linear",
-    });
+        this.tl1.to(this.workItems, {
+          z: 1300,
+          duration: (i) => {
+            return (i + 1) * 0.5;
+          },
+          ease: "linear",
+        });
 
-     */
+         */
 
     let tlZoom = gsap
       .timeline({
